@@ -8,6 +8,7 @@
   <script type="text/javascript" src="../jasmine.js"></script>
   <script type="text/javascript" src="../html/HtmlReporterHelpers.js"></script>
   <script type="text/javascript" src="../html/HtmlReporter.js"></script>
+  <script type="text/javascript" src="../html/JSONReporter.js"></script>
   <script type="text/javascript" src="../html/ReporterView.js"></script>
   <script type="text/javascript" src="../html/SpecView.js"></script>
   <script type="text/javascript" src="../html/SuiteView.js"></script>
@@ -45,6 +46,10 @@
                   var htmlReporter = new jasmine.HtmlReporter();
 
                   jasmineEnv.addReporter(htmlReporter);
+
+                  var jsonReporter = new jasmine.JSONReporter();
+
+                  jasmineEnv.addReporter(jsonReporter);
 
                   jasmineEnv.specFilter = function(spec) {
                     return htmlReporter.specFilter(spec);

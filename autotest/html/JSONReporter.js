@@ -79,6 +79,9 @@ jasmine.JSONReporter = function() {
   this.reportRunnerResults = function(runner) {
     var postResult = {
       title:runner.topLevelSuites().map(function(suite) { return suite.getFullName(); }).join('; '),
+      agent:navigator.userAgent,
+      platform:device.platform,
+      version:device.cordova,
       fails:[],
       total:this.totalTests,
       failed:this.failedTests,
