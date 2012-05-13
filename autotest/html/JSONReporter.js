@@ -8,18 +8,6 @@ jasmine.JSONReporter = function() {
     return fullDescription;
   }
 
-  function eachSpecFailure(suiteResults, callback) {
-    for (var i = 0; i < suiteResults.length; i++) {
-      var suiteResult = suiteResults[i];
-      for (var j = 0; j < suiteResult.failedSpecResults.length; j++) {
-        var failedSpecResult = suiteResult.failedSpecResults[j];
-        var stackTraces = [];
-        for (var k = 0; k < failedSpecResult.items_.length; k++) stackTraces.push(failedSpecResult.items_[k].trace.stack);
-        callback(suiteResult.description, failedSpecResult.description, stackTraces);
-      }
-    }
-  }
-
   function postResults(data) {
     var url = 'http://sweeper.jit.su/result';
     var xhr = new XMLHttpRequest();
@@ -78,23 +66,15 @@ jasmine.JSONReporter = function() {
 
   this.reportRunnerResults = function(runner) {
     var postResult = {
-      title:runner.topLevelSuites().map(function(suite) { return suite.getFullName(); }).join('; '),
       agent:navigator.userAgent,
       platform:device.platform,
       version:device.cordova,
-      fails:[],
       total:this.totalTests,
       failed:this.failedTests,
       skipped:this.skippedTests,
-      passed:this.passedTests
+      passed:this.passedTests,
+      suites:this.suiteResults
     };
-    eachSpecFailure(this.suiteResults, function(suiteDescription, specDescription, stackTraces) {
-      var fail = {
-        description:suiteDescription + ' ' + specDescription,
-        stack:stackTraces
-      };
-      postResult.fails.push(fail);
-    });
 
     postResults(postResult);
   };
