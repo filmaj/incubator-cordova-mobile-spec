@@ -39,7 +39,51 @@
   <script type="text/javascript" src="../tests/storage.tests.js"></script>
 
   <script type="text/javascript">
-      var root, temp_root, persistent_root;
+      var root, temp_root, persistent_root, num_cb, counting = false;
+
+      function createRemoveWin(name, cb) {
+          return function() {
+              console.log('[TEST BOOTUP] Removed "' + name + '".');
+              num_cb--;
+              if (!counting && num_cb === 0) {
+                  cb();
+              }
+          };
+      }
+      function createRemoveFail(name, cb) {
+          return function(err) {
+              console.log('[TEST BOOTUP] FAILED removing "' + name + '", error: ' + JSON.stringify(err));
+              num_cb--;
+              if (!counting && num_cb === 0) {
+                  cb();
+              }
+          };
+      }
+      function deleteAllTheThings(fs_root, cb) {
+          num_cb = 0;
+          counting = true;
+          var dir = fs_root.createReader();
+          dir.readEntries(function(entries) {
+              for (var i = 0, l = entries.length; i < l; i++) {
+                  var entry = entries[i];
+                  if (entry.isFile) {
+                      num_cb++;
+                      entry.remove(createRemoveWin(entry.name, cb), createRemoveFail(entry.name, cb));
+                  } else {
+                      fs_root.getDirectory(entry.fullPath, {create:false}, function(dirEntry) {
+                          num_cb++;
+                          dirEntry.removeRecursively(createRemoveWin(dirEntry.fullPath, cb), createRemoveFail(dirEntry.fullPath, cb));
+                      }, function(err) {
+                          console.log(['TEST BOOTUP] FAILED retrieving directory for pre-test cleanup, error: ' + JSON.stringify(err));
+                      });
+                  }
+              }
+              counting = false;
+              if (num_cb === 0) cb();
+          }, function(err) {
+              console.log(['TEST BOOTUP] FAILED retrieving directory listing for pre-test cleanup, error: ' + JSON.stringify(err));
+          });
+      }
 
       document.addEventListener('deviceready', function () {
           // one-time retrieval of the root file system entry
@@ -54,24 +98,30 @@
                   root = fileSystem.root; // set in file.tests.js
                   persistent_root = root;
 
-                  // Once root is set up, fire off tests
-                  var jasmineEnv = jasmine.getEnv();
-                  jasmineEnv.updateInterval = 1000;
+                  // First clean out the root
+                  console.log('Cleaning up persistent FS before running tests.');
+                  deleteAllTheThings(root, function() {
+                      window.requestFileSystem(LocalFileSystem.TEMPORARY, 0,
+                          function(fileSystem) {
+                              console.log('File API test Init: Setting TEMPORARY FS.');
+                              temp_root = fileSystem.root; // set in file.tests.js
+                              console.log('Cleaning up temporary FS before running tests.');
+                              deleteAllTheThings(temp_root, function() { 
+                                  // Once root is set up, fire off tests
+                                  var jasmineEnv = jasmine.getEnv();
+                                  jasmineEnv.updateInterval = 1000;
 
-                  var htmlReporter = new jasmine.HtmlReporter();
+                                  var htmlReporter = new jasmine.HtmlReporter();
 
-                  jasmineEnv.addReporter(htmlReporter);
+                                  jasmineEnv.addReporter(htmlReporter);
 
-                  jasmineEnv.specFilter = function(spec) {
-                    return htmlReporter.specFilter(spec);
-                  };
-
-                  jasmineEnv.execute();
-              }, onError);
-          window.requestFileSystem(LocalFileSystem.TEMPORARY, 0,
-              function(fileSystem) {
-                  console.log('File API test Init: Setting TEMPORARY FS.');
-                  temp_root = fileSystem.root; // set in file.tests.js
+                                  jasmineEnv.specFilter = function(spec) {
+                                    return htmlReporter.specFilter(spec);
+                                  };
+                                  jasmineEnv.execute();
+                              });
+                          }, onError);
+                      });
               }, onError);
       }, false);
   </script>
