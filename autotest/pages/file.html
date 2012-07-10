@@ -24,6 +24,7 @@
   <script type="text/javascript" src="../tests/file.tests.js"></script>
 
   <script type="text/javascript">
+
       var root, temp_root, persistent_root, num_cb, counting = false;
 
       function createRemoveWin(name, cb) {
@@ -43,7 +44,8 @@
                   cb();
               }
           };
-      }
+      } 
+      
       function deleteAllTheThings(fs_root, cb) {
           num_cb = 0;
           counting = true;
@@ -59,16 +61,17 @@
                           num_cb++;
                           dirEntry.removeRecursively(createRemoveWin(dirEntry.fullPath, cb), createRemoveFail(dirEntry.fullPath, cb));
                       }, function(err) {
-                          console.log(['TEST BOOTUP] FAILED retrieving directory for pre-test cleanup, error: ' + JSON.stringify(err));
+                          console.log('[TEST BOOTUP] FAILED retrieving directory for pre-test cleanup, error: ' + JSON.stringify(err));
                       });
                   }
               }
               counting = false;
               if (num_cb === 0) cb();
           }, function(err) {
-              console.log(['TEST BOOTUP] FAILED retrieving directory listing for pre-test cleanup, error: ' + JSON.stringify(err));
+              console.log('[TEST BOOTUP] FAILED retrieving directory listing for pre-test cleanup, error: ' + JSON.stringify(err));
           });
       }
+
 
       document.addEventListener('deviceready', function () {
           // one-time retrieval of the root file system entry

@@ -74,14 +74,14 @@
                           num_cb++;
                           dirEntry.removeRecursively(createRemoveWin(dirEntry.fullPath, cb), createRemoveFail(dirEntry.fullPath, cb));
                       }, function(err) {
-                          console.log(['TEST BOOTUP] FAILED retrieving directory for pre-test cleanup, error: ' + JSON.stringify(err));
+                          console.log('[TEST BOOTUP] FAILED retrieving directory for pre-test cleanup, error: ' + JSON.stringify(err));
                       });
                   }
               }
               counting = false;
               if (num_cb === 0) cb();
           }, function(err) {
-              console.log(['TEST BOOTUP] FAILED retrieving directory listing for pre-test cleanup, error: ' + JSON.stringify(err));
+              console.log('[TEST BOOTUP] FAILED retrieving directory listing for pre-test cleanup, error: ' + JSON.stringify(err));
           });
       }
 
